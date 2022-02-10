@@ -1,0 +1,52 @@
+[Unit]
+Description=Unbound DNS server
+Documentation=man:unbound(8)
+After=network.target
+Before=nss-lookup.target
+Wants=nss-lookup.target
+
+[Service]
+Type=notify
+Restart=on-failure
+EnvironmentFile=-/etc/default/unbound
+ExecStartPre=-/usr/lib/unbound/package-helper chroot_setup
+ExecStartPre=-/usr/lib/unbound/package-helper root_trust_anchor_update
+ExecStart=/usr/sbin/unbound -d -p $DAEMON_OPTS
+ExecStopPost=-/usr/lib/unbound/package-helper chroot_teardown
+ExecReload=+/bin/kill -HUP $MAINPID
+User=unbound
+Group=unbound
+
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+SecureBits=keep-caps
+NoNewPrivileges=yes
+ProtectSystem=True
+UMask=0077
+ProtectSystem=full
+ProtectHome=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+PrivateTmp=true
+PrivateDevices=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+RestrictRealtime=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+MemoryDenyWriteExecute=true
+ProtectSystem=full
+ProtectHostname=true
+ProcSubset=pid
+ProtectSystem=strict
+ProtectProc=ptraceable
+ReadWriteDirectories=/var/lib/unbound/ /etc/unbound
+
+[Install]
+WantedBy=multi-user.target
